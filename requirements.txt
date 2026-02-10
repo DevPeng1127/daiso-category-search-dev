@@ -30,7 +30,7 @@ joblib==1.5.3
 MarkupSafe==3.0.3
 mpmath==1.3.0
 networkx==3.4.2
-numpy==2.2.6
+numpy<2.0.0
 packaging==25.0
 proto-plus==1.27.0
 protobuf==5.29.5
@@ -61,9 +61,32 @@ uritemplate==4.2.0
 urllib3==2.6.3
 uvicorn==0.40.0
 
-# Additional dependencies from original daiso-category-search
+# Additional dependencies
 python-dotenv==1.0.1
 pandas==2.2.0
-selenium>=4.15.0
-webdriver-manager>=4.0.0
 Pillow>=10.0.0
+
+# Merged from sub-projects (poc/*, backend/stt)
+cohere>=5.0.0
+faster-whisper
+google-cloud-speech
+google-genai>=1.0.0
+langchain
+langchain-google-genai
+langgraph
+openai
+rich>=13.7
+sentencepiece
+
+# Audio Processing
+pydub==0.25.1
+ffmpeg-python==0.2.0
+
+# Search Infrastructure
+qdrant-client>=1.7.0
+elasticsearch>=8.11.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0
