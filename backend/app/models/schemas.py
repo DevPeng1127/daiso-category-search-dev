@@ -15,12 +15,27 @@ class ProductResult(BaseModel):
     category_major: str | None = None
     category_middle: str | None = None
     score: float = 0.0
+    counter_number: int | None = None
+    destination_x: float | None = None
+    destination_y: float | None = None
+    location_floor: str | None = None
+    location_description: str | None = None
+
+
+class Waypoint(BaseModel):
+    x: float
+    y: float
 
 
 class MapInfo(BaseModel):
-    floor: str = "1F"
+    floor: str = "B1"
     section: str = ""
-    map_image: str = "/static/maps/store.png"
+    map_image: str = "/maps/map_b1.jpg"
+    counter_number: int | None = None
+    section_description: str = ""
+    destination: Waypoint | None = None
+    start: Waypoint | None = None
+    waypoints: list[Waypoint] = []
 
 
 class QueryInfo(BaseModel):
