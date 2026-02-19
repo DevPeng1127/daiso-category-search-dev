@@ -35,7 +35,7 @@ async def test_search_returns_results(qdrant_service):
     mock_client.query_points = AsyncMock(return_value=mock_result)
     qdrant_service.client = mock_client
 
-    query_vector = [0.1] * 512
+    query_vector = [0.1] * 768
     results = await qdrant_service.search(query_vector)
     assert len(results) == 2
     assert results[0]["name"] == "대용량 물티슈"
@@ -48,7 +48,7 @@ async def test_search_returns_empty_on_error(qdrant_service):
     mock_client.query_points = AsyncMock(side_effect=Exception("Connection error"))
     qdrant_service.client = mock_client
 
-    results = await qdrant_service.search([0.1] * 512)
+    results = await qdrant_service.search([0.1] * 768)
     assert results == []
 
 
@@ -69,7 +69,7 @@ async def test_create_collection_skip_when_exists(qdrant_service):
     """Should skip creation if collection already exists"""
     mock_client = AsyncMock()
     mock_col = MagicMock()
-    mock_col.name = "daiso_products"
+    mock_col.name = "daiso_products_v5"
     mock_collections = MagicMock()
     mock_collections.collections = [mock_col]
     mock_client.get_collections = AsyncMock(return_value=mock_collections)

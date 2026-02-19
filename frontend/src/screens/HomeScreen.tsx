@@ -80,7 +80,7 @@ export default function HomeScreen() {
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-center px-8 overflow-hidden">
         {/* Banner */}
-        <div className="w-full max-w-4xl rounded-2xl overflow-hidden">
+        <div className="w-[90%] rounded-2xl overflow-hidden">
           <img
             src="/banner01.png"
             alt="설연휴 쇼핑도 다이소에서"

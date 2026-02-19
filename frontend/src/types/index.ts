@@ -43,6 +43,7 @@ export interface SearchResponse {
   map_info: MapInfo | null;
   query_info: QueryInfo | null;
   message?: string | null;
+  is_recommendation?: boolean;
 }
 
 export interface Category {

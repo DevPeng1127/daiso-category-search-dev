@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from app.models.schemas import SearchResponse, ProductResult, MapInfo, QueryInfo, Waypoint
 from app.data.store_locations import get_location, build_waypoints, KIOSK_POSITION
+from app.config import settings
 from app.services.gemini_service import GeminiService
 from app.services.es_service import ESService
 from app.services.qdrant_service import QdrantService
@@ -66,8 +67,11 @@ class SearchService:
 
         logger.info(f"[SEARCH] ES results: {len(es_results)}, Qdrant results: {len(qdrant_results)}")
 
-        # Step 3: Merge results (RRF fusion)
-        candidates = self._fuse_results(es_results, qdrant_results)
+        # Step 3: Merge results (fusion method depends on config)
+        if settings.FUSION_METHOD == "rrf":
+            candidates = self._fuse_results(es_results, qdrant_results)
+        else:
+            candidates = self._weighted_fuse_results(es_results, qdrant_results)
 
         if not candidates:
             # Fallback to SQLite LIKE search
@@ -83,7 +87,13 @@ class SearchService:
         else:
             top_results = candidates[:3]
 
-        logger.info(f"[SEARCH] Final results: {len(top_results)}")
+        # Step 4.5: Recommendation mode - fill to 3 if needed
+        is_recommendation = False
+        if len(top_results) < 3:
+            is_recommendation = True
+            top_results = self._fill_recommendations(top_results, keywords)
+
+        logger.info(f"[SEARCH] Final results: {len(top_results)}, recommendation={is_recommendation}")
 
         # Build response
         product_results = []
@@ -136,6 +146,8 @@ class SearchService:
                 intent=intent,
                 keywords=keywords,
             ),
+            message="찾으시는 상품과 비슷한 상품을 함께 노출합니다" if is_recommendation else None,
+            is_recommendation=is_recommendation,
         )
 
     async def _search_es(self, keywords: list[str]) -> list[dict]:
@@ -145,7 +157,6 @@ class SearchService:
     async def _search_qdrant(self, keywords: list[str]) -> list[dict]:
         """Search via Qdrant vector similarity"""
         try:
-            # Generate query embedding using CLIP
             from database.embeddings import get_text_embedding
             import pickle
             import numpy as np
@@ -166,7 +177,7 @@ class SearchService:
         self, es_results: list[dict], qdrant_results: list[dict]
     ) -> list[dict]:
         """Reciprocal Rank Fusion (RRF) to merge ES and Qdrant results"""
-        k = 60  # RRF constant
+        k = settings.RRF_K
         scores: dict[int, float] = {}
         product_map: dict[int, dict] = {}
 
@@ -189,6 +200,77 @@ class SearchService:
             p["score"] = scores[pid]
             result.append(p)
         return result
+
+    def _normalize_scores(self, results: list[dict]) -> list[dict]:
+        """Min-max normalize scores to [0, 1] range"""
+        if not results:
+            return results
+        scores = [r["score"] for r in results]
+        min_s, max_s = min(scores), max(scores)
+        rng = max_s - min_s
+        for r in results:
+            r["score"] = (r["score"] - min_s) / rng if rng > 0 else 1.0
+        return results
+
+    def _weighted_fuse_results(
+        self, es_results: list[dict], qdrant_results: list[dict]
+    ) -> list[dict]:
+        """Weighted linear combination fusion of ES and Qdrant results"""
+        bm25_boost = settings.BM25_BOOST
+        vector_boost = settings.VECTOR_BOOST
+
+        # Normalize scores independently
+        es_norm = self._normalize_scores([{**r} for r in es_results])
+        qd_norm = self._normalize_scores([{**r} for r in qdrant_results])
+
+        scores: dict[int, float] = {}
+        product_map: dict[int, dict] = {}
+
+        for item in es_norm:
+            pid = item["id"]
+            scores[pid] = scores.get(pid, 0) + item["score"] * bm25_boost
+            product_map[pid] = item
+
+        for item in qd_norm:
+            pid = item["id"]
+            scores[pid] = scores.get(pid, 0) + item["score"] * vector_boost
+            if pid not in product_map:
+                product_map[pid] = item
+
+        sorted_ids = sorted(scores, key=lambda x: scores[x], reverse=True)
+        result = []
+        for pid in sorted_ids:
+            p = product_map[pid]
+            p["score"] = scores[pid]
+            result.append(p)
+        return result
+
+    def _fill_recommendations(
+        self, results: list[dict], keywords: list[str]
+    ) -> list[dict]:
+        """Fill results up to 3 with similar products from SQLite"""
+        if len(results) >= 3:
+            return results[:3]
+        existing_ids = {r["id"] for r in results}
+        # 1차: 키워드 기반 보충
+        for kw in keywords:
+            for p in self.product_service.search_products(kw):
+                if p["id"] not in existing_ids:
+                    p["score"] = 0.0
+                    results.append(p)
+                    existing_ids.add(p["id"])
+                if len(results) >= 3:
+                    return results[:3]
+        # 2차: 전체 상품에서 보충 (최종 폴백)
+        if len(results) < 3:
+            for p in self.product_service.get_all_products():
+                if p["id"] not in existing_ids:
+                    p["score"] = 0.0
+                    results.append(p)
+                    existing_ids.add(p["id"])
+                if len(results) >= 3:
+                    break
+        return results[:3]
 
     def _fallback_search(self, keywords: list[str]) -> list[dict]:
         """Fallback to SQLite LIKE search"""
