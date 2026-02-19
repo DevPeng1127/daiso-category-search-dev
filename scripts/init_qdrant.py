@@ -54,7 +54,7 @@ async def main() -> None:
         p_id, p_name, p_price, p_img, p_emb = row
         try:
             vector = deserialize_embedding(p_emb)
-            if isinstance(vector, list) and len(vector) == 512:
+            if isinstance(vector, list) and len(vector) == 768:
                 points.append(
                     PointStruct(
                         id=p_id,

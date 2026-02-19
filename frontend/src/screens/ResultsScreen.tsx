@@ -7,9 +7,10 @@ export default function ResultsScreen() {
   const results = useAppStore((s) => s.results);
   const queryInfo = useAppStore((s) => s.queryInfo);
   const selectProduct = useAppStore((s) => s.selectProduct);
+  const isRecommendation = useAppStore((s) => s.isRecommendation);
 
-  // Reorder: put BEST (index 0) in the center
-  const reordered = results.length >= 3
+  // Reorder: put BEST (index 0) in the center (only in normal mode)
+  const reordered = !isRecommendation && results.length >= 3
     ? [results[1], results[0], results[2]]
     : results;
 
@@ -25,11 +26,20 @@ export default function ResultsScreen() {
         )}
       </header>
 
+      {/* Recommendation banner */}
+      {isRecommendation && (
+        <div className="text-center mb-6">
+          <p className="text-lg text-gray-500 font-medium">
+            찾으시는 상품과 비슷한 상품을 함께 노출합니다
+          </p>
+        </div>
+      )}
+
       {/* Product cards */}
-      <main className="flex-1 flex items-center justify-center px-8">
-        <div className="flex items-center justify-center gap-6">
+      <main className="flex-1 flex items-center justify-center">
+        <div className="flex items-center justify-center gap-6 w-[80%]">
           {reordered.map((product) => {
-            const isTop = product.id === results[0]?.id;
+            const isTop = !isRecommendation && product.id === results[0]?.id;
             return (
               <ProductCard
                 key={product.id}

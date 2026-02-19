@@ -13,8 +13,8 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-COLLECTION_NAME = "daiso_products_v5"
-VECTOR_DIM = 512
+COLLECTION_NAME = "daiso_products_v6"
+VECTOR_DIM = 768  # jhgan/ko-sbert-nli
 
 
 def _get_client() -> AsyncQdrantClient:

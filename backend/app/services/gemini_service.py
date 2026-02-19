@@ -28,15 +28,16 @@ CLASSIFY_PROMPT = """당신은 다이소 매장 키오스크 입력 분류기입
 """
 
 EXTRACT_PROMPT = """당신은 다이소 매장 상품 검색 도우미입니다.
-사용자의 질문에서 다이소 상품 검색에 적합한 키워드를 추출하세요.
+사용자의 질문에서 다이소 상품 검색에 적합한 키워드를 추출하고, 동의어도 함께 제시하세요.
 
 사용자 입력: "{query}"
 
 반드시 아래 JSON 형식으로만 응답하세요:
-{{"keywords": ["키워드1", "키워드2", "키워드3"]}}
+{{"keywords": ["키워드1", "키워드2"], "synonyms": ["동의어1", "동의어2", "동의어3"]}}
 
 규칙:
 - keywords는 다이소 상품명에 매칭될 수 있는 구체적 단어 1~5개
+- synonyms는 keywords의 동의어/유사어/별칭 (예: "알콜솜" → synonyms: ["알콜스왑", "소독솜"])
 - 추상적 표현을 구체적 상품명으로 변환 (예: "따뜻한 거 깔고 싶어" → ["매트", "방석", "카펫"])
 - 구어체/사투리도 이해하여 표준어 키워드로 변환"""
 
@@ -93,15 +94,18 @@ class GeminiService:
             return "product_search"
 
     async def extract_keywords(self, query: str) -> list[str]:
-        """Extract search keywords from user query"""
+        """Extract search keywords and synonyms from user query"""
         try:
             prompt = EXTRACT_PROMPT.format(query=query)
             response = await self.model.generate_content_async(prompt)
             text = _strip_code_fences(response.text)
             result = json.loads(text)
             keywords = result.get("keywords", [query])
-            logger.info(f"[KEYWORDS] extract_keywords: query='{query}' → keywords={keywords}")
-            return keywords
+            synonyms = result.get("synonyms", [])
+            # 중복 제거하며 병합
+            merged = list(dict.fromkeys(keywords + synonyms))
+            logger.info(f"[KEYWORDS] query='{query}' → keywords={keywords}, synonyms={synonyms}")
+            return merged
         except Exception as e:
             logger.error(f"Gemini extract_keywords failed: {e}")
             return [query]

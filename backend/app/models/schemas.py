@@ -49,6 +49,7 @@ class SearchResponse(BaseModel):
     map_info: MapInfo | None = None
     query_info: QueryInfo | None = None
     message: str | None = None
+    is_recommendation: bool = False
 
 
 class ProductResponse(BaseModel):

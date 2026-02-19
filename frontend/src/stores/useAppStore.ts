@@ -12,6 +12,7 @@ interface AppState {
   mapInfo: MapInfo | null;
   queryInfo: QueryInfo | null;
   error: string | null;
+  isRecommendation: boolean;
 
   search: (query: string) => Promise<void>;
   setScreen: (screen: Screen) => void;
@@ -30,6 +31,7 @@ export const useAppStore = create<AppState>((set) => ({
   mapInfo: null,
   queryInfo: null,
   error: null,
+  isRecommendation: false,
 
   search: async (query: string) => {
     set({ query, screen: 'loading', error: null });
@@ -41,6 +43,7 @@ export const useAppStore = create<AppState>((set) => ({
         results: response.results,
         mapInfo: response.map_info,
         queryInfo: response.query_info,
+        isRecommendation: response.is_recommendation ?? false,
         screen: response.results.length > 0 ? 'results' : 'home',
         error: message,
       });
@@ -84,6 +87,7 @@ export const useAppStore = create<AppState>((set) => ({
       mapInfo: null,
       queryInfo: null,
       error: null,
+      isRecommendation: false,
     }),
 
   setListening: (listening: boolean) => set({ isListening: listening }),

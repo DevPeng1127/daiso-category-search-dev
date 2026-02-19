@@ -48,4 +48,41 @@ describe('ResultsScreen', () => {
     render(<ResultsScreen />);
     expect(screen.getByText('BEST!')).toBeInTheDocument();
   });
+
+  it('should show recommendation banner when isRecommendation is true', () => {
+    useAppStore.setState({ isRecommendation: true });
+    render(<ResultsScreen />);
+    expect(screen.getByText('찾으시는 상품과 비슷한 상품을 함께 노출합니다')).toBeInTheDocument();
+  });
+
+  it('should hide BEST label in recommendation mode', () => {
+    useAppStore.setState({
+      isRecommendation: true,
+      results: [
+        {
+          id: 1, rank: 1, name: '대용량 물티슈', price: 1000,
+          image_url: '/img.jpg', category_major: '뷰티/위생',
+          category_middle: '화장지/물티슈', score: 0.95,
+        },
+        {
+          id: 2, rank: 2, name: '아기 물티슈', price: 1500,
+          image_url: '/img2.jpg', category_major: '뷰티/위생',
+          category_middle: '화장지/물티슈', score: 0.88,
+        },
+        {
+          id: 3, rank: 3, name: '물티슈 캡', price: 1000,
+          image_url: '/img3.jpg', category_major: '뷰티/위생',
+          category_middle: '화장지/물티슈', score: 0.0,
+        },
+      ],
+    });
+    render(<ResultsScreen />);
+    expect(screen.queryByText('BEST!')).not.toBeInTheDocument();
+  });
+
+  it('should not show recommendation banner in normal mode', () => {
+    useAppStore.setState({ isRecommendation: false });
+    render(<ResultsScreen />);
+    expect(screen.queryByText('찾으시는 상품과 비슷한 상품을 함께 노출합니다')).not.toBeInTheDocument();
+  });
 });
