@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import health, products, search
+from app.routers import health, products, search, share
 
 app = FastAPI(
     title="어디다있소 - Daiso Kiosk API",
@@ -32,6 +32,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
+app.include_router(share.router, prefix="/api")
 
 # Static files: product images
 if os.path.isdir(settings.IMAGES_DIR):

@@ -1,4 +1,4 @@
-export type Screen = 'home' | 'loading' | 'results' | 'map';
+export type Screen = 'home' | 'loading' | 'results' | 'map' | 'category' | 'category-map' | 'storemap' | 'help';
 
 export interface Product {
   id: number;
@@ -50,6 +50,11 @@ export interface SearchResponse {
 export interface Category {
   major: string;
   middles: string[];
+}
+
+export interface ShareResponse {
+  product: Product;
+  map_info: MapInfo;
 }
 
 export interface HealthStatus {

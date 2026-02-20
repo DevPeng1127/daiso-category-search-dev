@@ -1,4 +1,4 @@
-import type { SearchResponse, Product, Category, HealthStatus } from '../types';
+import type { SearchResponse, Product, Category, HealthStatus, ShareResponse } from '../types';
 
 const API_BASE = '/api';
 
@@ -33,5 +33,11 @@ export async function fetchCategories(): Promise<Category[]> {
 export async function fetchHealth(): Promise<HealthStatus> {
   const res = await fetch(`${API_BASE}/health`);
   if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSharedProduct(productId: number): Promise<ShareResponse> {
+  const res = await fetch(`${API_BASE}/share/${productId}`);
+  if (!res.ok) throw new Error(`Share fetch failed: ${res.status}`);
   return res.json();
 }

@@ -106,18 +106,25 @@ const B1_EDGES: [number, number][] = [
   [9, 11], [11, 12], [12, 13],
 ];
 
-const B1_ZONES: Record<number, { x: number; y: number; node: number }> = {
-  1: { x: 470, y: 300, node: 1 },
-  2: { x: 545, y: 475, node: 4 },
-  3: { x: 530, y: 590, node: 6 },
-  4: { x: 520, y: 700, node: 7 },
-  5: { x: 300, y: 700, node: 11 },
-  6: { x: 150, y: 780, node: 11 },
-  7: { x: 460, y: 830, node: 9 },
-  8: { x: 680, y: 925, node: 10 },
-  9: { x: 640, y: 780, node: 8 },
-  10: { x: 725, y: 575, node: 5 },
-  11: { x: 725, y: 285, node: 3 },
+export interface Zone {
+  name: string;
+  x: number;
+  y: number;
+  node: number;
+}
+
+export const B1_ZONES: Record<number, Zone> = {
+  1: { name: '시즌', x: 470, y: 300, node: 1 },
+  2: { name: '건강기능식품', x: 545, y: 475, node: 4 },
+  3: { name: '캐릭터', x: 530, y: 590, node: 6 },
+  4: { name: '파티/유아동', x: 520, y: 700, node: 7 },
+  5: { name: '문구', x: 300, y: 700, node: 11 },
+  6: { name: '포장', x: 150, y: 780, node: 11 },
+  7: { name: '디지털', x: 460, y: 830, node: 9 },
+  8: { name: '식품', x: 680, y: 925, node: 10 },
+  9: { name: '인테리어소품', x: 640, y: 780, node: 8 },
+  10: { name: '패션', x: 725, y: 575, node: 5 },
+  11: { name: '화장품', x: 725, y: 285, node: 3 },
 };
 
 const B1_GRAPH = buildGraph(B1_NODES_PX, B1_EDGES);
@@ -143,23 +150,23 @@ const B2_EDGES: [number, number][] = [
   [27, 28], [27, 29], [29, 30], [30, 31],
 ];
 
-const B2_ZONES: Record<number, { x: number; y: number; node: number }> = {
-  12: { x: 120, y: 300, node: 15 },
-  13: { x: 240, y: 745, node: 17 },
-  14: { x: 345, y: 745, node: 18 },
-  15: { x: 465, y: 745, node: 20 },
-  16: { x: 530, y: 535, node: 24 },
-  17: { x: 530, y: 425, node: 25 },
-  18: { x: 530, y: 310, node: 26 },
-  19: { x: 465, y: 180, node: 28 },
-  20: { x: 605, y: 180, node: 29 },
-  21: { x: 685, y: 90, node: 30 },
-  22: { x: 760, y: 225, node: 31 },
-  24: { x: 630, y: 310, node: 26 },
-  25: { x: 630, y: 425, node: 25 },
-  26: { x: 660, y: 730, node: 23 },
-  27: { x: 530, y: 830, node: 21 },
-  28: { x: 360, y: 830, node: 19 },
+export const B2_ZONES: Record<number, Zone> = {
+  12: { name: '스포츠', x: 120, y: 300, node: 15 },
+  13: { name: '반려동물', x: 240, y: 745, node: 17 },
+  14: { name: '수예', x: 345, y: 745, node: 18 },
+  15: { name: '캠핑/차량관리', x: 465, y: 745, node: 20 },
+  16: { name: '공구', x: 530, y: 535, node: 24 },
+  17: { name: '홈패브릭', x: 530, y: 425, node: 25 },
+  18: { name: '일본수입', x: 530, y: 310, node: 26 },
+  19: { name: '욕실', x: 465, y: 180, node: 28 },
+  20: { name: '청소', x: 605, y: 180, node: 29 },
+  21: { name: '세탁', x: 685, y: 90, node: 30 },
+  22: { name: '득템', x: 760, y: 225, node: 31 },
+  24: { name: '수납', x: 630, y: 310, node: 26 },
+  25: { name: '내추럴코너', x: 630, y: 425, node: 25 },
+  26: { name: '주방', x: 660, y: 730, node: 23 },
+  27: { name: '원예', x: 530, y: 830, node: 21 },
+  28: { name: '여행', x: 360, y: 830, node: 19 },
 };
 
 const B2_GRAPH = buildGraph(B2_NODES_PX, B2_EDGES);
