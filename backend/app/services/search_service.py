@@ -115,7 +115,7 @@ class SearchService:
                     rank=i + 1,
                     name=p.get("name", ""),
                     price=p.get("price", 0),
-                    image_url=f"/static/images/{p.get('image_name', '')}",
+                    image_url=p.get("image_url") or f"/static/images/{p.get('image_name', '')}",
                     category_major=p.get("category_major"),
                     category_middle=p.get("category_middle"),
                     score=p.get("score", 0.0),
