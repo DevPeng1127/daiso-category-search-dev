@@ -10,8 +10,8 @@ beforeEach(() => {
       floor: 'B1',
       section: '뷰티/위생',
       map_image: '/maps/map_b1.jpg',
-      counter_number: 7,
-      section_description: '화장품 코너',
+      counter_number: 11,
+      section_description: '화장품',
       destination: { x: 0.82, y: 0.24 },
       start: { x: 0.45, y: 0.05 },
       waypoints: [
@@ -24,8 +24,8 @@ beforeEach(() => {
       id: 1, rank: 1, name: '대용량 물티슈', price: 1000,
       image_url: '/img.jpg', category_major: '뷰티/위생',
       category_middle: '화장지/물티슈', score: 0.95,
-      counter_number: 7, destination_x: 0.82, destination_y: 0.24,
-      location_floor: 'B1', location_description: '화장품 코너',
+      counter_number: 11, destination_x: 0.82, destination_y: 0.24,
+      location_floor: 'B1', location_description: '화장품', zone_id: 11,
     },
   });
 });
@@ -38,7 +38,7 @@ describe('MapScreen', () => {
 
   it('should show counter number in location text', () => {
     render(<MapScreen />);
-    expect(screen.getByText(/7번 매대/)).toBeInTheDocument();
+    expect(screen.getByText(/11번 매대/)).toBeInTheDocument();
   });
 
   it('should show floor label', () => {

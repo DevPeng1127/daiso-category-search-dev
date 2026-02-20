@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from app.models.schemas import SearchResponse, ProductResult, MapInfo, QueryInfo, Waypoint
-from app.data.store_locations import get_location, build_waypoints, KIOSK_POSITION
+from app.data.store_locations import get_location, build_waypoints, get_start_position
 from app.config import settings
 from app.services.gemini_service import GeminiService
 from app.services.es_service import ESService
@@ -73,12 +73,22 @@ class SearchService:
         else:
             candidates = self._weighted_fuse_results(es_results, qdrant_results)
 
+        # Enrich results with full product data from SQLite
+        candidates = self._enrich_products(candidates)
+
         if not candidates:
             # Fallback to SQLite LIKE search
             candidates = self._fallback_search(keywords)
             logger.info(f"[SEARCH] Fallback SQLite results: {len(candidates)}")
 
         logger.info(f"[SEARCH] Total candidates after fusion: {len(candidates)}")
+        for i, c in enumerate(candidates[:10]):
+            logger.info(
+                f"[SCORE] #{i+1} id={c['id']} \"{c.get('name', '')}\" | "
+                f"BM25={c.get('bm25_score', 0.0):.4f}  "
+                f"Vector={c.get('vector_score', 0.0):.4f}  "
+                f"Combined={c.get('score', 0.0):.4f}"
+            )
 
         # Step 4: Gemini reranking → Top 3
         if len(candidates) > 3:
@@ -114,6 +124,7 @@ class SearchService:
                     destination_y=loc.y if loc else None,
                     location_floor=loc.floor if loc else None,
                     location_description=loc.section_description if loc else None,
+                    zone_id=loc.zone_id if loc else None,
                 )
             )
 
@@ -122,7 +133,7 @@ class SearchService:
             first = product_results[0]
             location = get_location(first.category_middle)
             if location:
-                path = build_waypoints(location.x, location.y, location.floor)
+                path = build_waypoints(location.x, location.y, location.floor, zone_id=location.zone_id)
                 map_info = MapInfo(
                     floor=location.floor,
                     section=first.category_major or "",
@@ -130,7 +141,7 @@ class SearchService:
                     counter_number=location.counter_number,
                     section_description=location.section_description,
                     destination=Waypoint(x=location.x, y=location.y),
-                    start=Waypoint(x=KIOSK_POSITION["x"], y=KIOSK_POSITION["y"]),
+                    start=Waypoint(x=path[0]["x"], y=path[0]["y"]),
                     waypoints=[Waypoint(x=p["x"], y=p["y"]) for p in path],
                 )
             else:
@@ -179,16 +190,22 @@ class SearchService:
         """Reciprocal Rank Fusion (RRF) to merge ES and Qdrant results"""
         k = settings.RRF_K
         scores: dict[int, float] = {}
+        bm25_scores: dict[int, float] = {}
+        vector_scores: dict[int, float] = {}
         product_map: dict[int, dict] = {}
 
         for rank, item in enumerate(es_results):
             pid = item["id"]
-            scores[pid] = scores.get(pid, 0) + 1.0 / (k + rank + 1)
+            rrf = 1.0 / (k + rank + 1)
+            scores[pid] = scores.get(pid, 0) + rrf
+            bm25_scores[pid] = item["score"]
             product_map[pid] = item
 
         for rank, item in enumerate(qdrant_results):
             pid = item["id"]
-            scores[pid] = scores.get(pid, 0) + 1.0 / (k + rank + 1)
+            rrf = 1.0 / (k + rank + 1)
+            scores[pid] = scores.get(pid, 0) + rrf
+            vector_scores[pid] = item["score"]
             if pid not in product_map:
                 product_map[pid] = item
 
@@ -198,6 +215,8 @@ class SearchService:
         for pid in sorted_ids:
             p = product_map[pid]
             p["score"] = scores[pid]
+            p["bm25_score"] = bm25_scores.get(pid, 0.0)
+            p["vector_score"] = vector_scores.get(pid, 0.0)
             result.append(p)
         return result
 
@@ -224,16 +243,20 @@ class SearchService:
         qd_norm = self._normalize_scores([{**r} for r in qdrant_results])
 
         scores: dict[int, float] = {}
+        bm25_scores: dict[int, float] = {}
+        vector_scores: dict[int, float] = {}
         product_map: dict[int, dict] = {}
 
         for item in es_norm:
             pid = item["id"]
             scores[pid] = scores.get(pid, 0) + item["score"] * bm25_boost
+            bm25_scores[pid] = item["score"]
             product_map[pid] = item
 
         for item in qd_norm:
             pid = item["id"]
             scores[pid] = scores.get(pid, 0) + item["score"] * vector_boost
+            vector_scores[pid] = item["score"]
             if pid not in product_map:
                 product_map[pid] = item
 
@@ -242,8 +265,29 @@ class SearchService:
         for pid in sorted_ids:
             p = product_map[pid]
             p["score"] = scores[pid]
+            p["bm25_score"] = bm25_scores.get(pid, 0.0)
+            p["vector_score"] = vector_scores.get(pid, 0.0)
             result.append(p)
         return result
+
+    def _enrich_products(self, results: list[dict]) -> list[dict]:
+        """Enrich search results with full product data from SQLite.
+
+        ES/Qdrant results may lack fields like image_name or category.
+        Fill them in from the canonical SQLite source.
+        """
+        if not results:
+            return results
+        enriched = []
+        for r in results:
+            product = self.product_service.get_product_by_id(r["id"])
+            if product:
+                # Preserve search scores, merge SQLite fields underneath
+                merged = {**product, **r}
+                enriched.append(merged)
+            else:
+                enriched.append(r)
+        return enriched
 
     def _fill_recommendations(
         self, results: list[dict], keywords: list[str]

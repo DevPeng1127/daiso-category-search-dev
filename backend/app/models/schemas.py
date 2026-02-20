@@ -20,6 +20,7 @@ class ProductResult(BaseModel):
     destination_y: float | None = None
     location_floor: str | None = None
     location_description: str | None = None
+    zone_id: int | None = None
 
 
 class Waypoint(BaseModel):

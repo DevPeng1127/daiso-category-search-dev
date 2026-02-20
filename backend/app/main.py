@@ -1,7 +1,13 @@
 """FastAPI application entry point"""
+import logging
 import os
 
 from fastapi import FastAPI, Request
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles

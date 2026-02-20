@@ -3,7 +3,6 @@ import sqlite3
 import pickle
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from database import get_connection
 
 MODEL_NAME = "jhgan/ko-sbert-nli"
 
@@ -27,6 +26,8 @@ def get_text_embedding(text: str) -> bytes:
 
 def generate_embeddings() -> None:
     """Generate 768-dim ko-sbert embeddings for all products."""
+    from database.database import get_connection
+
     model = _get_model()
     conn = get_connection()
     cursor = conn.cursor()

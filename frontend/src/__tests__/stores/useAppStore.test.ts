@@ -123,13 +123,13 @@ describe('useAppStore', () => {
       id: 5, rank: 2, name: '샴푸', price: 2000,
       image_url: '/img2.jpg', category_major: '뷰티/위생',
       category_middle: '헤어/바디', score: 0.8,
-      counter_number: 6, destination_x: 0.82, destination_y: 0.20,
-      location_floor: 'B1', location_description: '화장품 코너',
+      counter_number: 11, destination_x: 0.82, destination_y: 0.20,
+      location_floor: 'B1', location_description: '화장품', zone_id: 11,
     };
 
     useAppStore.getState().selectProduct(product);
     const state = useAppStore.getState();
-    expect(state.mapInfo?.counter_number).toBe(6);
+    expect(state.mapInfo?.counter_number).toBe(11);
     expect(state.mapInfo?.destination?.x).toBe(0.82);
     expect(state.mapInfo?.destination?.y).toBe(0.20);
     expect(state.mapInfo?.waypoints?.length).toBeGreaterThanOrEqual(3);

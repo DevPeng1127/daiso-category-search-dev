@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Screen, Product, MapInfo, QueryInfo, Waypoint } from '../types';
 import { fetchSearch } from '../services/api';
-import { buildWaypoints, KIOSK_POSITION } from '../utils/pathfinding';
+import { buildWaypoints } from '../utils/pathfinding';
 
 interface AppState {
   screen: Screen;
@@ -60,7 +60,8 @@ export const useAppStore = create<AppState>((set) => ({
 
     // Recalculate mapInfo if product has location data
     if (product.destination_x != null && product.destination_y != null && mapInfo) {
-      const path = buildWaypoints(product.destination_x, product.destination_y);
+      const floor = product.location_floor ?? mapInfo.floor;
+      const path = buildWaypoints(product.destination_x, product.destination_y, floor, product.zone_id ?? undefined);
       const waypoints: Waypoint[] = path.map(p => ({ x: p.x, y: p.y }));
       mapInfo = {
         ...mapInfo,
@@ -69,7 +70,7 @@ export const useAppStore = create<AppState>((set) => ({
         counter_number: product.counter_number,
         section_description: product.location_description ?? '',
         destination: { x: product.destination_x, y: product.destination_y },
-        start: { x: KIOSK_POSITION.x, y: KIOSK_POSITION.y },
+        start: path[0],
         waypoints,
       };
     }

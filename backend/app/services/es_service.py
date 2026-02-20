@@ -22,38 +22,11 @@ INDEX_SETTINGS = {
                     "decompound_mode": "mixed",
                 }
             },
-            "filter": {
-                "daiso_synonym_filter": {
-                    "type": "synonym",
-                    "synonyms": [
-                        "물티슈, 물휴지, 웻티슈",
-                        "충전기, 충전케이블, 충전선",
-                        "텀블러, 보온병, 보온컵",
-                        "볼펜, 펜, 필기구",
-                        "포토카드, 포토 카드, 포카",
-                        "이어폰, 이어셋, 이어버드",
-                        "칫솔, 양치, 치솔",
-                        "치약, 양치약",
-                        "수건, 타올, 타월",
-                        "우산, 양산",
-                        "슬리퍼, 실내화",
-                        "양말, 삭스",
-                        "건전지, 배터리, 밧데리",
-                        "테이프, 접착테이프, 셀로판테이프",
-                        "가위, 시저",
-                    ],
-                }
-            },
             "analyzer": {
                 "korean": {
                     "type": "custom",
                     "tokenizer": "nori_mixed",
                     "filter": ["lowercase"],
-                },
-                "korean_synonym": {
-                    "type": "custom",
-                    "tokenizer": "nori_mixed",
-                    "filter": ["lowercase", "daiso_synonym_filter"],
                 },
             },
         },
@@ -61,7 +34,8 @@ INDEX_SETTINGS = {
     "mappings": {
         "properties": {
             "id": {"type": "integer"},
-            "name": {"type": "text", "analyzer": "korean_synonym"},
+            "name": {"type": "text", "analyzer": "korean"},
+            "image_name": {"type": "keyword"},
             "category_major": {"type": "keyword"},
             "category_middle": {"type": "keyword"},
             "price": {"type": "integer"},
@@ -121,6 +95,7 @@ class ESService:
         body = {
             "id": product["id"],
             "name": product["name"],
+            "image_name": product.get("image_name", ""),
             "category_major": product.get("category_major", ""),
             "category_middle": product.get("category_middle", ""),
             "price": product.get("price", 0),
@@ -141,6 +116,7 @@ class ESService:
                 {
                     "id": p["id"],
                     "name": p["name"],
+                    "image_name": p.get("image_name", ""),
                     "category_major": p.get("category_major", ""),
                     "category_middle": p.get("category_middle", ""),
                     "price": p.get("price", 0),

@@ -6,17 +6,33 @@ interface FloorMapProps {
   mapInfo: MapInfo;
 }
 
+interface ImgRect {
+  width: number;
+  height: number;
+  offsetX: number;
+  offsetY: number;
+}
+
 export default function FloorMap({ mapInfo }: FloorMapProps) {
   const imgRef = useRef<HTMLImageElement>(null);
-  const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
+  const [imgRect, setImgRect] = useState<ImgRect | null>(null);
 
   const handleImageLoad = useCallback(() => {
-    if (imgRef.current) {
-      setImgSize({
-        width: imgRef.current.clientWidth,
-        height: imgRef.current.clientHeight,
-      });
-    }
+    if (!imgRef.current) return;
+    const img = imgRef.current;
+    const containerW = img.clientWidth;
+    const containerH = img.clientHeight;
+    const naturalW = img.naturalWidth;
+    const naturalH = img.naturalHeight;
+
+    // object-contain scales the image to fit while preserving aspect ratio
+    const scale = Math.min(containerW / naturalW, containerH / naturalH);
+    const renderedW = naturalW * scale;
+    const renderedH = naturalH * scale;
+    const offsetX = (containerW - renderedW) / 2;
+    const offsetY = (containerH - renderedH) / 2;
+
+    setImgRect({ width: renderedW, height: renderedH, offsetX, offsetY });
   }, []);
 
   return (
@@ -38,14 +54,16 @@ export default function FloorMap({ mapInfo }: FloorMapProps) {
         }}
       />
 
-      {imgSize.width > 0 && mapInfo.waypoints && mapInfo.waypoints.length > 0 && mapInfo.destination && mapInfo.start && (
+      {imgRect && imgRect.width > 0 && mapInfo.waypoints && mapInfo.waypoints.length > 0 && mapInfo.destination && mapInfo.start && (
         <NavigationOverlay
           waypoints={mapInfo.waypoints}
           destination={mapInfo.destination}
           start={mapInfo.start}
-          counterNumber={mapInfo.counter_number ?? null}
-          width={imgSize.width}
-          height={imgSize.height}
+          sectionName={mapInfo.section_description ?? null}
+          width={imgRect.width}
+          height={imgRect.height}
+          offsetX={imgRect.offsetX}
+          offsetY={imgRect.offsetY}
         />
       )}
     </div>

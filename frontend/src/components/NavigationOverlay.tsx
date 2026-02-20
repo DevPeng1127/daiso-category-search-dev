@@ -4,18 +4,22 @@ interface NavigationOverlayProps {
   waypoints: Waypoint[];
   destination: Waypoint;
   start: Waypoint;
-  counterNumber: number | null;
+  sectionName: string | null;
   width: number;
   height: number;
+  offsetX: number;
+  offsetY: number;
 }
 
 export default function NavigationOverlay({
   waypoints,
   destination,
   start,
-  counterNumber,
+  sectionName,
   width,
   height,
+  offsetX,
+  offsetY,
 }: NavigationOverlayProps) {
   if (waypoints.length === 0) return <svg />;
 
@@ -32,7 +36,8 @@ export default function NavigationOverlay({
 
   return (
     <svg
-      className="absolute inset-0 pointer-events-none"
+      className="absolute pointer-events-none"
+      style={{ left: offsetX, top: offsetY }}
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
@@ -63,7 +68,7 @@ export default function NavigationOverlay({
       {/* Destination marker */}
       <circle cx={dest.x} cy={dest.y} r={10} fill="#E31836" />
       <circle cx={dest.x} cy={dest.y} r={5} fill="white" />
-      {counterNumber && (
+      {sectionName && (
         <text
           x={dest.x}
           y={dest.y - 16}
@@ -72,7 +77,7 @@ export default function NavigationOverlay({
           fontWeight="bold"
           fill="#E31836"
         >
-          {counterNumber}번 매대
+          {sectionName}
         </text>
       )}
     </svg>
