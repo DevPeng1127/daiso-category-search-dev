@@ -69,6 +69,11 @@ class CategoryResponse(BaseModel):
     middles: list[str]
 
 
+class ShareResponse(BaseModel):
+    product: ProductResult
+    map_info: MapInfo
+
+
 class HealthResponse(BaseModel):
     status: str
     services: dict[str, bool]

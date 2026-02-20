@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import type { Screen, Product, MapInfo, QueryInfo, Waypoint } from '../types';
-import { fetchSearch } from '../services/api';
+import { fetchSearch, fetchSharedProduct } from '../services/api';
 import { buildWaypoints } from '../utils/pathfinding';
+
+interface SelectedZone {
+  id: number;
+  floor: string;
+  name: string;
+}
 
 interface AppState {
   screen: Screen;
@@ -13,6 +19,8 @@ interface AppState {
   queryInfo: QueryInfo | null;
   error: string | null;
   isRecommendation: boolean;
+  isSharedMode: boolean;
+  selectedZone: SelectedZone | null;
 
   search: (query: string) => Promise<void>;
   setScreen: (screen: Screen) => void;
@@ -20,6 +28,8 @@ interface AppState {
   reset: () => void;
   setListening: (listening: boolean) => void;
   setQuery: (query: string) => void;
+  selectZone: (zoneId: number, floor: string, name: string) => void;
+  initSharedMode: (productId: number) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -32,6 +42,8 @@ export const useAppStore = create<AppState>((set) => ({
   queryInfo: null,
   error: null,
   isRecommendation: false,
+  isSharedMode: false,
+  selectedZone: null,
 
   search: async (query: string) => {
     set({ query, screen: 'loading', error: null });
@@ -89,9 +101,28 @@ export const useAppStore = create<AppState>((set) => ({
       queryInfo: null,
       error: null,
       isRecommendation: false,
+      isSharedMode: false,
+      selectedZone: null,
     }),
 
   setListening: (listening: boolean) => set({ isListening: listening }),
 
   setQuery: (query: string) => set({ query }),
+
+  selectZone: (zoneId: number, floor: string, name: string) =>
+    set({ selectedZone: { id: zoneId, floor, name }, screen: 'category-map' }),
+
+  initSharedMode: async (productId: number) => {
+    set({ isSharedMode: true, screen: 'loading' });
+    try {
+      const data = await fetchSharedProduct(productId);
+      set({
+        selectedProduct: data.product,
+        mapInfo: data.map_info,
+        screen: 'map',
+      });
+    } catch {
+      set({ screen: 'home', error: '공유 정보를 불러올 수 없습니다.', isSharedMode: false });
+    }
+  },
 }));

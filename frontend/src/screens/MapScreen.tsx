@@ -7,16 +7,52 @@ export default function MapScreen() {
   const selectedProduct = useAppStore((s) => s.selectedProduct);
   const mapInfo = useAppStore((s) => s.mapInfo);
   const reset = useAppStore((s) => s.reset);
+  const setScreen = useAppStore((s) => s.setScreen);
+  const isSharedMode = useAppStore((s) => s.isSharedMode);
 
   if (!mapInfo) return null;
 
   const counterNumber = selectedProduct?.counter_number ?? mapInfo.counter_number;
   const locationDesc = selectedProduct?.location_description ?? mapInfo.section_description;
   const floor = selectedProduct?.location_floor ?? mapInfo.floor;
-  const qrUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const qrUrl = typeof window !== 'undefined' && selectedProduct
+    ? `${window.location.origin}/?share=1&pid=${selectedProduct.id}`
+    : '';
 
   // Format floor label
   const floorLabel = floor === 'B1' ? '지하1층' : floor === 'B2' ? '지하2층' : floor;
+
+  if (isSharedMode) {
+    return (
+      <div className="flex flex-col h-screen bg-white">
+        {/* Header */}
+        <header className="px-8 pt-6 pb-2">
+          <Logo />
+        </header>
+
+        {/* Product name */}
+        {selectedProduct && (
+          <h2 className="text-center text-2xl font-extrabold text-daiso-gray-900 mb-2">
+            {selectedProduct.name}
+          </h2>
+        )}
+
+        {/* Location description */}
+        <p className="text-lg font-bold text-daiso-gray-900 text-center mb-4">
+          <span className="text-daiso-red">📍</span>{' '}
+          {counterNumber
+            ? `${floorLabel} ${counterNumber}번 매대로 이동하세요`
+            : `${floorLabel} ${locationDesc ?? ''}`
+          }
+        </p>
+
+        {/* Map */}
+        <main className="flex-1 mx-8 mb-8 border border-gray-200 rounded-2xl overflow-hidden bg-gray-50 min-h-0">
+          <FloorMap mapInfo={mapInfo} />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -57,7 +93,19 @@ export default function MapScreen() {
             지도를 보며 이동하실 수 있습니다
           </p>
 
-          {/* Back button */}
+          {/* Back to results button */}
+          <button
+            onClick={() => setScreen('results')}
+            className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-daiso-red text-white
+                       font-bold text-lg hover:bg-red-600 active:scale-95 transition-all"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+            </svg>
+            검색 결과로 돌아가기
+          </button>
+
+          {/* Reset button */}
           <button
             onClick={reset}
             className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-gray-400 text-white

@@ -6,10 +6,11 @@ const IDLE_TIMEOUT = 60_000; // 60 seconds
 export default function IdleTimer() {
   const screen = useAppStore((s) => s.screen);
   const reset = useAppStore((s) => s.reset);
+  const isSharedMode = useAppStore((s) => s.isSharedMode);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (screen === 'home') return;
+    if (screen === 'home' || isSharedMode) return;
 
     const resetTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -24,7 +25,7 @@ export default function IdleTimer() {
       if (timerRef.current) clearTimeout(timerRef.current);
       events.forEach((e) => window.removeEventListener(e, resetTimer));
     };
-  }, [screen, reset]);
+  }, [screen, reset, isSharedMode]);
 
   return null;
 }
