@@ -28,9 +28,9 @@ async def get_shared_product(product_id: int) -> ShareResponse:
 
         product_result = ProductResult(
             id=product_dict["id"],
-            rank=product_dict.get("rank", 0),
+            rank=product_dict.get("rank") or 0,
             name=product_dict["name"],
-            price=product_dict.get("price", 0),
+            price=product_dict.get("price") or 0,
             image_url=product_dict.get("image_url", ""),
             category_major=product_dict.get("category_major"),
             category_middle=category_middle,
@@ -55,9 +55,9 @@ async def get_shared_product(product_id: int) -> ShareResponse:
     else:
         product_result = ProductResult(
             id=product_dict["id"],
-            rank=product_dict.get("rank", 0),
+            rank=product_dict.get("rank") or 0,
             name=product_dict["name"],
-            price=product_dict.get("price", 0),
+            price=product_dict.get("price") or 0,
             image_url=product_dict.get("image_url", ""),
             category_major=product_dict.get("category_major"),
             category_middle=category_middle,
