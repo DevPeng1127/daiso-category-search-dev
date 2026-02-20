@@ -20,9 +20,11 @@ describe('NavigationOverlay', () => {
         waypoints={waypoints}
         destination={destination}
         start={start}
-        counterNumber={2}
+        sectionName="화장품"
         width={600}
         height={400}
+        offsetX={0}
+        offsetY={0}
       />
     );
     const svg = container.querySelector('svg');
@@ -35,9 +37,11 @@ describe('NavigationOverlay', () => {
         waypoints={waypoints}
         destination={destination}
         start={start}
-        counterNumber={2}
+        sectionName="화장품"
         width={600}
         height={400}
+        offsetX={0}
+        offsetY={0}
       />
     );
     const polyline = container.querySelector('polyline');
@@ -45,20 +49,22 @@ describe('NavigationOverlay', () => {
     expect(polyline?.getAttribute('stroke-dasharray')).toBeTruthy();
   });
 
-  it('should show counter number label', () => {
+  it('should show section name label at destination', () => {
     const { container } = render(
       <NavigationOverlay
         waypoints={waypoints}
         destination={destination}
         start={start}
-        counterNumber={33}
+        sectionName="식품"
         width={600}
         height={400}
+        offsetX={0}
+        offsetY={0}
       />
     );
     const texts = container.querySelectorAll('text');
     const labels = Array.from(texts).map(t => t.textContent);
-    expect(labels.some(l => l?.includes('33'))).toBe(true);
+    expect(labels.some(l => l?.includes('식품'))).toBe(true);
   });
 
   it('should show start marker text', () => {
@@ -67,9 +73,11 @@ describe('NavigationOverlay', () => {
         waypoints={waypoints}
         destination={destination}
         start={start}
-        counterNumber={2}
+        sectionName="문구"
         width={600}
         height={400}
+        offsetX={0}
+        offsetY={0}
       />
     );
     const texts = container.querySelectorAll('text');
@@ -83,9 +91,11 @@ describe('NavigationOverlay', () => {
         waypoints={[]}
         destination={destination}
         start={start}
-        counterNumber={2}
+        sectionName="문구"
         width={600}
         height={400}
+        offsetX={0}
+        offsetY={0}
       />
     );
     const polyline = container.querySelector('polyline');

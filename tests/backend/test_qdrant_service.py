@@ -69,7 +69,7 @@ async def test_create_collection_skip_when_exists(qdrant_service):
     """Should skip creation if collection already exists"""
     mock_client = AsyncMock()
     mock_col = MagicMock()
-    mock_col.name = "daiso_products_v5"
+    mock_col.name = "daiso_products_v6"
     mock_collections = MagicMock()
     mock_collections.collections = [mock_col]
     mock_client.get_collections = AsyncMock(return_value=mock_collections)

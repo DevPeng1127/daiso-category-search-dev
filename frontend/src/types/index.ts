@@ -14,6 +14,7 @@ export interface Product {
   destination_y?: number | null;
   location_floor?: string | null;
   location_description?: string | null;
+  zone_id?: number | null;
 }
 
 export interface Waypoint {
