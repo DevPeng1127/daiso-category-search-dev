@@ -66,4 +66,35 @@ describe('MapScreen', () => {
     render(<MapScreen />);
     expect(screen.getByAltText('어디다이소')).toBeInTheDocument();
   });
+
+  it('should render back-to-results button', () => {
+    render(<MapScreen />);
+    expect(screen.getByText('검색 결과로 돌아가기')).toBeInTheDocument();
+  });
+
+  it('should go back to results on button click', () => {
+    useAppStore.setState({ results: [{ id: 1, rank: 1, name: '물티슈', price: 1000, image_url: '/img.jpg', category_major: null, category_middle: null, score: 0.9 }] });
+    render(<MapScreen />);
+    fireEvent.click(screen.getByText('검색 결과로 돌아가기'));
+    expect(useAppStore.getState().screen).toBe('results');
+  });
+
+  it('should hide back-to-results and reset buttons in shared mode', () => {
+    useAppStore.setState({ isSharedMode: true });
+    render(<MapScreen />);
+    expect(screen.queryByText('검색 결과로 돌아가기')).not.toBeInTheDocument();
+    expect(screen.queryByText('다시 검색하기')).not.toBeInTheDocument();
+  });
+
+  it('should hide QR section in shared mode', () => {
+    useAppStore.setState({ isSharedMode: true });
+    render(<MapScreen />);
+    expect(screen.queryByText(/QR코드를 스캔하면/)).not.toBeInTheDocument();
+  });
+
+  it('should show product name in shared mode', () => {
+    useAppStore.setState({ isSharedMode: true });
+    render(<MapScreen />);
+    expect(screen.getByText('대용량 물티슈')).toBeInTheDocument();
+  });
 });
