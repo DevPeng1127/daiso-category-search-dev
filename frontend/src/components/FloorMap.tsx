@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import type { MapInfo } from '../types';
 import NavigationOverlay from './NavigationOverlay';
 
@@ -17,13 +17,15 @@ export default function FloorMap({ mapInfo }: FloorMapProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgRect, setImgRect] = useState<ImgRect | null>(null);
 
-  const handleImageLoad = useCallback(() => {
+  const measure = useCallback(() => {
     if (!imgRef.current) return;
     const img = imgRef.current;
     const containerW = img.clientWidth;
     const containerH = img.clientHeight;
     const naturalW = img.naturalWidth;
     const naturalH = img.naturalHeight;
+
+    if (containerW === 0 || containerH === 0 || naturalW === 0 || naturalH === 0) return;
 
     // object-contain scales the image to fit while preserving aspect ratio
     const scale = Math.min(containerW / naturalW, containerH / naturalH);
@@ -34,6 +36,27 @@ export default function FloorMap({ mapInfo }: FloorMapProps) {
 
     setImgRect({ width: renderedW, height: renderedH, offsetX, offsetY });
   }, []);
+
+  // Handle cached images (onLoad may not fire) + recalculate on resize
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img) return;
+
+    // If already loaded (cached), measure immediately
+    if (img.complete && img.naturalWidth > 0) {
+      measure();
+    }
+
+    // Recalculate when container resizes
+    const ro = new ResizeObserver(() => {
+      if (img.complete && img.naturalWidth > 0) {
+        measure();
+      }
+    });
+    ro.observe(img);
+
+    return () => ro.disconnect();
+  }, [measure]);
 
   return (
     <div className="relative w-full h-full">
@@ -47,7 +70,7 @@ export default function FloorMap({ mapInfo }: FloorMapProps) {
         src={mapInfo.map_image}
         alt="매장 지도"
         className="w-full h-full object-contain"
-        onLoad={handleImageLoad}
+        onLoad={measure}
         onError={(e) => {
           (e.target as HTMLImageElement).src = '';
           (e.target as HTMLImageElement).alt = '지도를 불러올 수 없습니다';
