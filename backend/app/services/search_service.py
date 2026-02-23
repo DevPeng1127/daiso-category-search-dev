@@ -108,7 +108,11 @@ class SearchService:
         # Build response
         product_results = []
         for i, p in enumerate(top_results):
-            loc = get_location(p.get("category_middle"))
+            loc = get_location(
+                category_middle=p.get("category_middle"),
+                category_major=p.get("category_major"),
+                product_name=p.get("name"),
+            )
             product_results.append(
                 ProductResult(
                     id=p.get("id", 0),
@@ -131,7 +135,10 @@ class SearchService:
         map_info = None
         if product_results:
             first = product_results[0]
-            location = get_location(first.category_middle)
+            location = get_location(
+                category_middle=first.category_middle,
+                category_major=first.category_major,
+            )
             if location:
                 path = build_waypoints(location.x, location.y, location.floor, zone_id=location.zone_id)
                 map_info = MapInfo(
@@ -273,8 +280,9 @@ class SearchService:
     def _enrich_products(self, results: list[dict]) -> list[dict]:
         """Enrich search results with full product data from SQLite.
 
-        ES/Qdrant results may lack fields like image_name or category.
-        Fill them in from the canonical SQLite source.
+        SQLite is the source of truth for product metadata (name, category, etc.).
+        ES/Qdrant may have stale category data, so SQLite values take precedence.
+        Search-specific fields (score, bm25_score, vector_score) are preserved.
         """
         if not results:
             return results
@@ -282,8 +290,11 @@ class SearchService:
         for r in results:
             product = self.product_service.get_product_by_id(r["id"])
             if product:
-                # Preserve search scores, merge SQLite fields underneath
-                merged = {**product, **r}
+                # SQLite overrides ES/Qdrant metadata; search scores preserved
+                merged = {**r, **product}
+                for key in ("score", "bm25_score", "vector_score"):
+                    if key in r:
+                        merged[key] = r[key]
                 enriched.append(merged)
             else:
                 enriched.append(r)

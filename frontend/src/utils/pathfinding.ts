@@ -151,7 +151,7 @@ const B2_EDGES: [number, number][] = [
 ];
 
 export const B2_ZONES: Record<number, Zone> = {
-  12: { name: '스포츠', x: 120, y: 300, node: 15 },
+  12: { name: '스포츠', x: 120, y: 770, node: 15 },
   13: { name: '반려동물', x: 240, y: 745, node: 17 },
   14: { name: '수예', x: 345, y: 745, node: 18 },
   15: { name: '캠핑/차량관리', x: 465, y: 745, node: 20 },

@@ -17,7 +17,9 @@ async def get_shared_product(product_id: int) -> ShareResponse:
         raise HTTPException(status_code=404, detail="Product not found")
 
     category_middle = product_dict.get("category_middle")
-    location = get_location(category_middle)
+    category_major = product_dict.get("category_major")
+    product_name = product_dict.get("name")
+    location = get_location(category_middle, category_major, product_name)
 
     if location:
         floor = location.floor

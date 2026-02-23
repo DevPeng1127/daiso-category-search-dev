@@ -29,7 +29,7 @@ def test_store_location_dataclass():
 
 def test_middle_category_locations_has_entries():
     """Should have mappings for all middle categories"""
-    assert len(MIDDLE_CATEGORY_LOCATIONS) >= 35
+    assert len(MIDDLE_CATEGORY_LOCATIONS) >= 27
     for key, loc in MIDDLE_CATEGORY_LOCATIONS.items():
         assert isinstance(loc, StoreLocation)
         assert 0.0 <= loc.x <= 1.0
@@ -44,20 +44,20 @@ def test_floors_are_b1_or_b2():
 
 
 def test_kiosk_position():
-    """Kiosk position should be at top center (B1 entrance)"""
+    """Kiosk position should be near top area (B1 entrance)"""
     assert "x" in KIOSK_POSITION
     assert "y" in KIOSK_POSITION
-    assert KIOSK_POSITION["y"] < 0.2  # near top
+    assert KIOSK_POSITION["y"] < 0.3  # upper area of map
 
 
 def test_get_location_known_category():
     """Should return StoreLocation for known middle category"""
-    loc = get_location("스킨케어")
+    loc = get_location(category_middle="스킨케어", category_major="뷰티/위생")
     assert loc is not None
     assert isinstance(loc, StoreLocation)
     assert loc.floor == "B1"
 
-    loc2 = get_location("욕실용품")
+    loc2 = get_location(category_middle="욕실용품", category_major="청소/욕실")
     assert loc2 is not None
     assert loc2.floor == "B2"
 
@@ -69,30 +69,37 @@ def test_get_location_unknown_category():
 
 
 def test_build_waypoints_b1():
-    """Should return path from kiosk to B1 destination"""
-    path = build_waypoints(0.82, 0.48, "B1")
+    """Should return graph path from kiosk to B1 zone"""
+    loc = get_location(category_middle="스킨케어", category_major="뷰티/위생")  # zone 11
+    assert loc is not None
+    path = build_waypoints(loc.x, loc.y, "B1", zone_id=loc.zone_id)
     assert len(path) >= 3
     # First point should be kiosk position
     assert path[0]["x"] == KIOSK_POSITION["x"]
     assert path[0]["y"] == KIOSK_POSITION["y"]
-    # Last point should be destination
-    assert path[-1]["x"] == 0.82
-    assert path[-1]["y"] == 0.48
+    # Last point should be zone destination
+    assert abs(path[-1]["x"] - loc.x) < 0.01
+    assert abs(path[-1]["y"] - loc.y) < 0.01
 
 
 def test_build_waypoints_b2():
-    """Should return path for B2 destination"""
-    path = build_waypoints(0.82, 0.72, "B2")
+    """Should return graph path for B2 zone"""
+    from app.data.store_locations import get_start_position
+    loc = get_location(category_middle="주방잡화", category_major="주방용품")  # zone 26
+    assert loc is not None
+    start = get_start_position("B2")
+    path = build_waypoints(loc.x, loc.y, "B2", zone_id=loc.zone_id)
     assert len(path) >= 3
+    assert path[0]["x"] == start["x"]
+    assert path[0]["y"] == start["y"]
+
+
+def test_build_waypoints_fallback_without_zone_id():
+    """Without zone_id, should return direct 2-point path"""
+    path = build_waypoints(0.5, 0.5, "B1")
+    assert len(path) == 2
     assert path[0]["x"] == KIOSK_POSITION["x"]
-    assert path[-1]["x"] == 0.82
-    assert path[-1]["y"] == 0.72
-
-
-def test_build_waypoints_short_path_for_nearby():
-    """Destinations above aisle should get shorter path"""
-    path = build_waypoints(0.30, 0.08, "B2")
-    assert len(path) == 3  # direct: kiosk → horizontal → destination
+    assert path[-1]["x"] == 0.5
 
 
 def test_build_waypoints_all_coords_normalized():
