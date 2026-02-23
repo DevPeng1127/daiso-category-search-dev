@@ -6,7 +6,6 @@ import asyncio
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from database.database import get_all_products
-from database.category_matcher import init_category_tables, populate_categories, update_all_products
 from app.services.es_service import ESService
 
 
@@ -15,18 +14,16 @@ async def main() -> None:
     print("[ES Index Initialization]")
     print("=" * 50)
 
-    # Step 1: Ensure categories are populated
-    print("\n[1/3] Updating product categories...")
-    init_category_tables()
-    populate_categories()
-    update_all_products()
+    # NOTE: Do NOT call category_matcher.update_all_products() here.
+    # SQLite already has correct categories from reclassify_products.py.
+    # Re-running the keyword matcher would overwrite them with "미분류".
 
-    # Step 2: Get all products
+    # Step 1: Get all products
     products = get_all_products()
-    print(f"\n[2/3] Found {len(products)} products in SQLite")
+    print(f"\n[1/2] Found {len(products)} products in SQLite")
 
-    # Step 3: Index to Elasticsearch
-    print("\n[3/3] Indexing to Elasticsearch...")
+    # Step 2: Index to Elasticsearch
+    print("\n[2/2] Indexing to Elasticsearch...")
     es = ESService()
     await es.create_index()
     count = await es.bulk_index(products)

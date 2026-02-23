@@ -82,12 +82,11 @@ async def main() -> None:
     print("=" * 50)
 
     from database.database import get_all_products
-    from database.category_matcher import init_category_tables, populate_categories, update_all_products
     from app.services.es_service import ESService
 
-    init_category_tables()
-    populate_categories()
-    update_all_products()
+    # NOTE: Do NOT call category_matcher.update_all_products() here.
+    # SQLite already has correct categories from reclassify_products.py.
+    # Re-running the keyword matcher would overwrite them with "미분류".
 
     products = get_all_products()
     print(f"  Found {len(products)} products")
