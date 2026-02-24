@@ -64,7 +64,10 @@ export const useAppStore = create<AppState>((set) => ({
     }
   },
 
-  setScreen: (screen: Screen) => set({ screen }),
+  setScreen: (screen: Screen) => {
+    if (useAppStore.getState().isSharedMode && screen !== 'map') return;
+    set({ screen });
+  },
 
   selectProduct: (product: Product) => {
     const state = useAppStore.getState();
@@ -90,7 +93,8 @@ export const useAppStore = create<AppState>((set) => ({
     set({ selectedProduct: product, mapInfo, screen: 'map' });
   },
 
-  reset: () =>
+  reset: () => {
+    if (useAppStore.getState().isSharedMode) return;
     set({
       screen: 'home',
       query: '',
@@ -103,7 +107,8 @@ export const useAppStore = create<AppState>((set) => ({
       isRecommendation: false,
       isSharedMode: false,
       selectedZone: null,
-    }),
+    });
+  },
 
   setListening: (listening: boolean) => set({ isListening: listening }),
 
