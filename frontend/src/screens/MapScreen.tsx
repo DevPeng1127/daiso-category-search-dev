@@ -22,11 +22,13 @@ export default function MapScreen() {
   // Format floor label
   const floorLabel = floor === 'B1' ? '지하1층' : floor === 'B2' ? '지하2층' : floor;
 
+  // 1x1 white PNG as background-image: browser dark mode won't invert images
+  const whiteBg = "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC')";
+
   if (isSharedMode) {
     return (
-      <div
-        className="flex flex-col h-screen"
-        style={{ background: 'linear-gradient(#fafafa, #fafafa)', color: '#111827', WebkitTextFillColor: '#111827' }}
+      <div className="flex flex-col h-screen"
+        style={{ backgroundImage: whiteBg, backgroundSize: 'cover' }}
       >
         {/* Header */}
         <header className="px-8 pt-6 pb-2">
@@ -35,18 +37,14 @@ export default function MapScreen() {
 
         {/* Product name */}
         {selectedProduct && (
-          <h2 className="text-center text-2xl font-extrabold mb-2"
-            style={{ color: '#111827', WebkitTextFillColor: '#111827' }}
-          >
+          <h2 className="text-center text-2xl font-extrabold text-daiso-gray-900 mb-2">
             {selectedProduct.name}
           </h2>
         )}
 
         {/* Location description */}
-        <p className="text-lg font-bold text-center mb-4"
-          style={{ color: '#111827', WebkitTextFillColor: '#111827' }}
-        >
-          <span style={{ color: '#e60012', WebkitTextFillColor: '#e60012' }}>📍</span>{' '}
+        <p className="text-lg font-bold text-daiso-gray-900 text-center mb-4">
+          <span className="text-daiso-red">📍</span>{' '}
           {counterNumber
             ? `${floorLabel} ${counterNumber}번 매대로 이동하세요`
             : `${floorLabel} ${locationDesc ?? ''}`
@@ -54,9 +52,7 @@ export default function MapScreen() {
         </p>
 
         {/* Map */}
-        <main className="flex-1 mx-8 mb-8 border border-gray-200 rounded-2xl overflow-hidden min-h-0"
-          style={{ background: 'linear-gradient(#f0f0f0, #f0f0f0)' }}
-        >
+        <main className="flex-1 mx-8 mb-8 border border-gray-200 rounded-2xl overflow-hidden bg-gray-50 min-h-0">
           <FloorMap mapInfo={mapInfo} />
         </main>
       </div>
