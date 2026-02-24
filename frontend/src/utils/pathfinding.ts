@@ -175,6 +175,11 @@ const B2_GRAPH = buildGraph(B2_NODES_PX, B2_EDGES);
 
 export const KIOSK_POSITION: Point = normalize(...B1_TABLET_PX);
 
+export function getStartPosition(floor?: string): Point {
+  if (floor === 'B2') return normalize(...B2_TABLET_PX);
+  return KIOSK_POSITION;
+}
+
 /**
  * Build navigation waypoints from start to destination.
  * Uses graph-based Dijkstra pathfinding for both B1 and B2.
@@ -197,11 +202,10 @@ export function buildWaypoints(
     );
   }
 
-  // Fallback (no zoneId)
-  const kx = KIOSK_POSITION.x;
-  const ky = KIOSK_POSITION.y;
+  // Fallback (no zoneId) - use floor-specific start position
+  const start = getStartPosition(floor);
   return [
-    { x: kx, y: ky },
+    { x: start.x, y: start.y },
     { x: destX, y: destY },
   ];
 }

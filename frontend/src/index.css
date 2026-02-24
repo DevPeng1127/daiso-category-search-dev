@@ -65,6 +65,9 @@ body {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #111827;
 }
 
 #root {
