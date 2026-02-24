@@ -22,14 +22,9 @@ export default function MapScreen() {
   // Format floor label
   const floorLabel = floor === 'B1' ? '지하1층' : floor === 'B2' ? '지하2층' : floor;
 
-  // 1x1 white PNG as background-image: browser dark mode won't invert images
-  const whiteBg = "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC')";
-
   if (isSharedMode) {
     return (
-      <div className="flex flex-col h-screen"
-        style={{ backgroundImage: whiteBg, backgroundSize: 'cover' }}
-      >
+      <div className="flex flex-col h-screen bg-white">
         {/* Header */}
         <header className="px-8 pt-6 pb-2">
           <Logo />
